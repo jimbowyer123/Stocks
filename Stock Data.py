@@ -1,4 +1,4 @@
-# Relevant imports
+# Relevant imports (best not to include any irrelevant ones)
 import matplotlib.pyplot as plt
 import datetime
 from yahoo_finance import Share
@@ -8,6 +8,7 @@ import matplotlib.finance as mfinance
 from matplotlib.dates import DateFormatter, WeekdayLocator,\
     DayLocator, MONDAY
 import matplotlib.ticker as ticker
+
 # Create a class to contain relevant stock values for a time period
 class Bar:
     def __init__(self,open,high,low,close,volume):
