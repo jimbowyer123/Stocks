@@ -5,8 +5,6 @@ from yahoo_finance import Share
 from statistics import mean
 import matplotlib.dates as dt
 import matplotlib.finance as mfinance
-from matplotlib.dates import DateFormatter, WeekdayLocator,\
-    DayLocator, MONDAY
 import matplotlib.ticker as ticker
 
 # Create a class to contain relevant stock values for a time period
@@ -185,7 +183,7 @@ def plot_candlestick_with_yahoo(symbol,start_date = datetime.date.today()-dateti
 
 
 
-#print(analyse_recent_year("BCS"))
+#print(analyse_recent_year("AAPL"))
 #plot_closes("ITVPF",datetime.date.today()-datetime.timedelta(days=365),datetime.date.today())
 #plot_candlestick_with_yahoo('DIS')
-#plot_candlestick_with_yahoo('DIS')
+plot_candlestick_with_yahoo('AAPL')
