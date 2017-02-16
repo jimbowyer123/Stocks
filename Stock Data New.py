@@ -26,7 +26,7 @@ class DataSeries:
     def __init__(self,data_list):
         self.DataList=data_list
     # Need a Function to create a simple moving average of the data
-    def get_simple_moving_average(self,average_number):
+    def sma(self, average_number):
         sma=[]
         for i in range(len(self.DataList)-(average_number-1)):
             sum_data=0
@@ -34,7 +34,7 @@ class DataSeries:
                 sum_data=sum_data+self.DataList[i+j]
             sma.append(sum_data/average_number)
         return(sma)
-    def get_exponential_moving_average(self,average_number):
+    def ema(self, average_number):
         ema=[]
         k=2/(average_number+1)
         for i in range(len(self.DataList)-(average_number-1)):
@@ -158,7 +158,7 @@ def construct_candlestick_plot(symbol,start_date,end_date):
 def add_sma_line(fig,data_list,x_values,average_length):
     # Create values for the sma line
     data_series=DataSeries(data_list)
-    sma_list=data_series.get_simple_moving_average(average_length)
+    sma_list=data_series.sma(average_length)
 
     # Select appropriate x values to pair with the sma values
     x=[]
@@ -176,7 +176,7 @@ def add_sma_line(fig,data_list,x_values,average_length):
 def add_ema_line(fig,data_list,x_values,average_length):
     #Create values for the ema line
     data_series=DataSeries(data_list)
-    ema_list=data_series.get_exponential_moving_average(average_length)
+    ema_list=data_series.ema(average_length)
 
     # Select appropriate x values to pair with the ema values
     x=[]
@@ -232,7 +232,7 @@ last_year = today - datetime.timedelta(days=365)
 #plot_closes('AAPL',last_year,today)
 #plot_candlestick_plot('AAPL',last_year,today)
 #plot_candlestick_with_sma('AAPL',last_year,today,30)
-#plot_candlestick_with_sma_ema('AAPL',last_year,today,30)
+plot_candlestick_with_sma_ema('AAPL',last_year,today,30)
 
 data=[22.27,22.19,22.08,22.17,22.18,22.13,22.23,22.43,22.24,22.29,22.15,22.39,22.38,22.61,23.36,24.05,23.75,23.83,23.95,23.63,23.82,23.87,23.65,23.19,23.1,23.33,22.68,23.1,22.4,22.17]
 data_series=DataSeries(data)
