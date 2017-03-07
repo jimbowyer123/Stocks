@@ -9,9 +9,6 @@ last_year = today - datetime.timedelta(days=365)
 
 sp.plot_candlestick_with_sma_ema('RL',last_year,today,30)
 #print(fsf.analyse_recent_year('AAPL'))
-x=TS.trade_strategy_one('RL',last_year,today)
-y=TS.trade_strategy_two('RL',last_year,today)
-print(x)
-print(x.Trades)
-print(y)
-print(y.Trades)
+
+#TS.Portfolio().trade_strategy_one('DWA',last_year,today,30)
+TS.Portfolio().trade_strategy_crossed_sma_with_constant_trade_cost('RL',last_year,today,30,100)

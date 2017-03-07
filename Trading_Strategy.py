@@ -51,59 +51,103 @@ class Portfolio:
     # Operation performed when the portfolio sells stock
     def sell(self, sell_object):
         self.Trades.append(sell_object)
-        self.Quantity-=1
+        self.Quantity-=sell_object.Quantity
         self.Value+=sell_object.Quantity*sell_object.Price
+
+    # Function for the first trading strategy which buys a stock when its close price
+    # goes from below the sma(30) to above the sma(30) and sells when the converse happens
+    def trade_strategy_one(self,symbol, start_date, end_date, sma_length,):
+        # Retrieve the stock data over relevant period of time
+        list_daily_bars = smf.read_daily_bars(symbol, start_date, end_date)
+
+        # Create data series for opens, closes and the sma(30)of the closes
+        open_series = sc.DataSeries(smf.get_list('Open', list_daily_bars), smf.get_list('Date', list_daily_bars))
+        close_series = sc.DataSeries(smf.get_list('Close', list_daily_bars), smf.get_list('Date', list_daily_bars))
+        sma_series = close_series.sma(sma_length)
+
+        # Start a loop which will run through the sma data series
+        for i in range(1, len(sma_series.Dates) - 1):
+            # Starts a loop through the close series to find date corresponding to the sma date
+            for j in range(len(close_series.Dates)):
+                if sma_series.Dates[i] == close_series.Dates[j]:
+                    # Looks for case where stock price crosses the sma line from below to above
+                    if close_series.Data[j] > sma_series.Data[i] and close_series.Data[j - 1] < sma_series.Data[i - 1]:
+                        # Buys a unit of the stock
+                        buy_object = Buy_Object(open_series.Dates[j + 1], open_series.Data[j + 1])
+                        self.buy(buy_object)
+                        print(buy_object)
+                    # Look for case where the stock price crosses the sma line from above to below
+                    if close_series.Data[j] < sma_series.Data[i] and close_series.Data[j - 1] > sma_series.Data[i - 1] and self.Quantity > 0:
+                        # Sells a unit of the stock
+                        sell_object = Sell_Object(open_series.Dates[j + 1], open_series.Data[j + 1])
+                        self.sell(sell_object)
+                        print(sell_object)
+        print('Total profit = ' + str(self.Value + self.Quantity * close_series.Data[-1]))
+        return (self)
+
+    # Similar to the trade strategy above but using the ema(30) line instead of the sma(30)
+    def trade_strategy_two(self,symbol, start_date, end_date, ema_length):
+        list_daily_bars = smf.read_daily_bars(symbol, start_date, end_date)
+        open_series = sc.DataSeries(smf.get_list('Open', list_daily_bars), smf.get_list('Date', list_daily_bars))
+        close_series = sc.DataSeries(smf.get_list('Close', list_daily_bars), smf.get_list('Date', list_daily_bars))
+        ema_series = close_series.ema(ema_length)
+        for i in range(1, len(ema_series.Dates) - 1):
+            now = ema_series.Dates[i]
+            for j in range(len(close_series.Dates)):
+                if now == close_series.Dates[j]:
+                    if close_series.Data[j] > ema_series.Data[i] and close_series.Data[j - 1] < ema_series.Data[i - 1]:
+                        buy_object = Buy_Object(open_series.Dates[j + 1], open_series.Data[j + 1])
+                        self.buy(buy_object)
+                        print(buy_object)
+                    if close_series.Data[j] < ema_series.Data[i] and close_series.Data[j - 1] > ema_series.Data[
+                                i - 1] and self.Quantity > 0:
+                        sell_object = Sell_Object(open_series.Dates[j + 1], open_series.Data[j + 1])
+                        self.sell(sell_object)
+                        print(sell_object)
+        print('Total profit = ' + str(self.Value+self.Quantity*close_series.Data[-1]))
+        return (self)
 
     # How the portfolio is viewed when printed
     def __repr__(self):
         return('Value=%2f Quantity=%d'%(self.Value,self.Quantity))
 
-# Function for the first trading strategy which buys a stock when its close price
-# goes from below the sma(30) to above the sma(30) and sells when the converse happens
-def trade_strategy_one(symbol,start_date,end_date,portfolio=Portfolio()):
-    # Retrieve the stock data over relevant period of time
-    list_daily_bars=smf.read_daily_bars(symbol,start_date,end_date)
+    # Trying to create a similar sma trade strategy but with given costs of each trade
+    def trade_strategy_crossed_sma_with_constant_trade_cost(self,symbol,start_date,end_date,sma_length,trade_value):
+        # Retrieve the stock data over relevant period of time
+        list_daily_bars = smf.read_daily_bars(symbol, start_date, end_date)
 
-    # Create data series for opens, closes and the sma(30)of the closes
-    open_series=sc.DataSeries(smf.get_list('Open',list_daily_bars),smf.get_list('Date',list_daily_bars))
-    close_series=sc.DataSeries(smf.get_list('Close',list_daily_bars),smf.get_list('Date',list_daily_bars))
-    sma_series=close_series.sma(30)
+        # Create data series for opens, closes and the sma(30)of the closes
+        open_series = sc.DataSeries(smf.get_list('Open', list_daily_bars), smf.get_list('Date', list_daily_bars))
+        close_series = sc.DataSeries(smf.get_list('Close', list_daily_bars), smf.get_list('Date', list_daily_bars))
+        sma_series = close_series.sma(sma_length)
 
-    # Start a loop which will run through the sma data series
-    for i in range(1,len(sma_series.Dates)-1):
-        # Starts a loop through the close series to find date corresponding to the sma date
-        for j in range(len(close_series.Dates)):
-            if sma_series.Dates[i]==close_series.Dates[j]:
-                # Looks for case where stock price crosses the sma line from below to above
-                if close_series.Data[j]>sma_series.Data[i] and close_series.Data[j-1]<sma_series.Data[i-1]:
-                    # Buys a unit of the stock
-                    buy_object=Buy_Object(open_series.Dates[j+1],open_series.Data[j+1])
-                    portfolio.buy(buy_object)
-                # Look for case where the stock price crosses the sma line from above to below
-                if close_series.Data[j]<sma_series.Data[i] and close_series.Data[j-1]>sma_series.Data[i-1] and portfolio.Quantity>0:
-                    # Sells a unit of the stock
-                    sell_object=Sell_Object(open_series.Dates[j+1],open_series.Data[j+1])
-                    portfolio.sell(sell_object)
-    return(portfolio)
+        for i in range(1, len(sma_series.Dates) - 1):
+            for j in range(len(close_series.Dates)):
+                if sma_series.Dates[i] == close_series.Dates[j]:
+                    if close_series.Data[j] > sma_series.Data[i] and close_series.Data[j - 1] < sma_series.Data[i - 1]:
+                        # Will need to find the number of units to buy that gets the cost closest to £100
+                        n=0
+                        price=open_series.Data[j+1]
+                        while n*price<trade_value:
+                            n=n+1
+                        buy_object=Buy_Object(open_series.Dates[j+1],price,n-1)
+                        self.buy(buy_object)
+                        print(buy_object)
+                    if close_series.Data[j]<sma_series.Data[i] and close_series.Data[j-1]>sma_series.Data[i-1] and self.Quantity>0:
+                        sell_object=Sell_Object(open_series.Dates[j+1],open_series.Data[j+1],self.Quantity)
+                        self.sell(sell_object)
+                        print(sell_object)
+        print('Total profit = ' + str(self.Value+self.Quantity*close_series.Data[-1]))
+        return(self)
 
-# Similar to the trade strategy above but using the ema(30) line instead of the sma(30)
-def trade_strategy_two(symbol,start_date,end_date,portfolio=Portfolio()):
-    list_daily_bars=smf.read_daily_bars(symbol,start_date,end_date)
-    open_series=sc.DataSeries(smf.get_list('Open',list_daily_bars),smf.get_list('Date',list_daily_bars))
-    close_series=sc.DataSeries(smf.get_list('Close',list_daily_bars),smf.get_list('Date',list_daily_bars))
-    ema_series=close_series.ema(30)
-    for i in range(1,len(ema_series.Dates)-1):
-        now=ema_series.Dates[i]
-        for \
-                j in range(len(close_series.Dates)):
-            if now==close_series.Dates[j]:
-                if close_series.Data[j]>ema_series.Data[i] and close_series.Data[j-1]<ema_series.Data[i-1]:
-                    buy_object=Buy_Object(open_series.Dates[j+1],open_series.Data[j+1])
-                    portfolio.buy(buy_object)
-                if close_series.Data[j]<ema_series.Data[i] and close_series.Data[j-1]>ema_series.Data[i-1] and portfolio.Quantity>0:
-                    sell_object=Sell_Object(open_series.Dates[j+1],open_series.Data[j+1])
-                    portfolio.sell(sell_object)
-    return(portfolio)
+
+
+
+
+
+
+
+
 
 
 
