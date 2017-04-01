@@ -4,7 +4,7 @@ import stock_classes as sc
 from statistics import mean
 
 # Function that produces a list of Bars for a stock from a start date to an end date
-def read_daily_bars(symbol_ticker,start_date,end_date):
+def read_daily_bars(symbol_ticker,start_date=datetime.date.today()-datetime.timedelta(days=365),end_date=datetime.date.today()):
     df=web.DataReader(symbol_ticker,'yahoo',start_date,end_date)
     list_daily_bars=[]
     for i in range(len(df)):
